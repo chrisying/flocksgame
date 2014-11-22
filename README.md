@@ -3,8 +3,9 @@ Flocks game concept
 Current features:
 - Basic boids simulation
 - Hunter simulation
+- Player movement
 
-Recognized problems:
-- When boids = 1, divide by 0 issue
-- No player
-- Eating a bit inconsistent
+TODO:
+- fix player movement (constant speed, possibly use mouse location)
+- make hunter speed slowly increase
+- make boids show direction with triangle

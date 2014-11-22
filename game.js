@@ -1,10 +1,11 @@
 
 // Constants
-var FRAME_TIME = 10; // milliseconds
+var FRAME_TIME = 25; // milliseconds
 var HEIGHT, WIDTH; // Set in index.html, do not change here
-var numBoids = 10;
-var numHunters = 2;
-var boids, hunters;
+var numBoids = 20;
+var numHunters = 1;
+var player, boids, hunters, all;
+var gameRunning = 0;  // -1 = game over, 0 = init, 1 = running
 
 // Init
 window.onload = function() {
@@ -15,12 +16,14 @@ window.onload = function() {
 
   boids = [];
   hunters = [];
+  all = [];
 
   // Player (boid[0] always the player)
-  // var player = new Boid(new paper.Point(WIDTH/2, HEIGHT/2),
-  //                       new paper.Point(0, 0),
-  //                       0);
-  // boids.push(player);
+  player = new Boid(new paper.Point(WIDTH/2, HEIGHT/2),
+                    new paper.Point(0, 0),
+                     0);
+  boids.push(player);
+  all.push(player);
 
   // Boids
   for (var i = 0; i < numBoids; i++) {
@@ -31,6 +34,7 @@ window.onload = function() {
                                         Math.sin(angle)),
                         1);
     boids.push(boid);
+    all.push(boid);
   }
 
   // Hunters
@@ -40,53 +44,93 @@ window.onload = function() {
                           new paper.Point(0, 0),
                           2);
     hunters.push(hunter);
+    all.push(hunter);
   }
 }
 
 setInterval(loop, FRAME_TIME);
+document.onkeydown = handleKey;
+document.onkeyup = releaseKey;
 
 function loop() {
-  // Boids
-  for (var i = 0; i < boids.length; i++) {
-    var boid = boids[i];
-    if (boid.type == 1) {
-      var rules = [];
-      var sum_COM = calculate_COM();
-      var sum_VEL = calculate_VEL();
+  if (gameRunning == 1) {
+    // Boids
+    for (var i = 0; i < boids.length; i++) {
+      var boid = boids[i];
+      if (boid.type == 1) {
+        var rules = [];
+        var sum_COM = calculate_COM();
+        var sum_VEL = calculate_VEL();
 
-      rules.push(rule1(boid, sum_COM));
-      rules.push(rule2(boid));
-      rules.push(rule3(boid, sum_VEL));
-      rules.push(rule4(boid));
-      rules.push(runRule(boid));
+        if (boids.length >= 2) {
+          rules.push(rule1(boid, sum_COM));
+          rules.push(rule2(boid));
+          rules.push(rule3(boid, sum_VEL));
+        }
+        rules.push(rule4(boid));
+        rules.push(runRule(boid));
+        for (var r = 0; r < rules.length; r++) {
+          boid.velocity = Padd(boid.velocity, rules[r]);
+        }
+
+        boid.velocity = dampen(boid.velocity, 1);
+        boid.velocity = Padd(boid.velocity, noise());
+      }
+    }
+
+    // Hunters
+    for (var i = 0; i < numHunters; i++) {
+      var hunter = hunters[i];
+      var rules = [];
+
+      rules.push(huntRule(hunter));
+      rules.push(rule4(hunter));
       for (var r = 0; r < rules.length; r++) {
-        boid.velocity = Padd(boid.velocity, rules[r]);
+        hunter.velocity = Padd(hunter.velocity, rules[r]);
       }
 
-      boid.velocity = dampen(boid.velocity, 0.5);
-      boid.velocity = Padd(boid.velocity, noise());
-    }
-    boid.position = boundary(Padd(boid.position, boid.velocity));
-    boid.position = Padd(boid.position, boid.velocity);
-    boid.draw();
-  }
-
-  // Hunters
-  for (var i = 0; i < numHunters; i++) {
-    var hunter = hunters[i];
-    var rules = [];
-
-    rules.push(huntRule(hunter));
-    rules.push(rule4(hunter));
-    for (var r = 0; r < rules.length; r++) {
-      hunter.velocity = Padd(hunter.velocity, rules[r]);
+      hunter.velocity = dampen(hunter.velocity, 2);
     }
 
-    hunter.velocity = dampen(hunter.velocity, 5);
-    hunter.position = Padd(hunter.position, hunter.velocity);
-    hunter.draw();
+    // Draw/update loop
+    for (var i = 0; i < all.length; i++) {
+      boid = all[i];
+
+      boid.position = boundary(Padd(boid.position, boid.velocity));
+      boid.position = Padd(boid.position, boid.velocity);
+      boid.draw();
+    }
+
+    paper.view.draw();
   }
-  paper.view.draw();
+}
+
+function handleKey(e) {
+  e = e || window.event;
+
+  switch(e.keyCode) {
+    case 13:  // enter
+      gameRunning = 1;
+      break;
+    case 37:  // left
+      player.velocity = Padd(player.velocity, new paper.Point(-1, 0));
+      break;
+    case 38:  // up
+      player.velocity = Padd(player.velocity, new paper.Point(0, -1));
+      break;
+    case 39:  // right
+      player.velocity = Padd(player.velocity, new paper.Point(1, 0));
+      break;
+    case 40:  // down
+      player.velocity = Padd(player.velocity, new paper.Point(0, 1));
+      break;
+  }
+}
+
+function releaseKey(e) {
+  e = e || window.event;
+
+  player.velocity = new paper.Point(0, 0);
 }
 
 function calculate_COM() {
@@ -107,9 +151,9 @@ function calculate_VEL() {
 
 function dampen(vel, max) {
   // Soft
-  if (Pabs(vel) > max) {
-    vel = Pmul(vel, 0.9); 
-  }
+  // if (Pabs(vel) > max) {
+  //   vel = Pmul(vel, 0.9); 
+  // }
 
   // Hard
   if (Pabs(vel) > 2 * max) {
@@ -194,23 +238,26 @@ function huntRule(hunter) {
   for (var i = 1; i < boids.length; i++) {
     var d = Pdistsq(hunter.position, boids[i].position);
     if (d < minD) {
-      mindD = d;
+      minD = d;
       ind = i;
       closest = boids[i];
     }
   }
  
   // Try to avoid orbit 
-  if (minD < 10000) {
-    SCALE = SCALE * 10;
-  }
+  // if (minD < 10000) {
+  //   SCALE = SCALE * 10;
+  // }
 
   // Eat
-  if (minD < 1000) {
-    // if ind == 0, player eat => lose
-    console.log('eat');
+  if (minD < 500) {
+    if (ind == 0) {
+      console.log('Game over!');
+      gameRunning = -1;
+    }
     
     boids.splice(ind, 1);
+    closest.velocity = (new paper.Point(0, 0));
     closest.type = 3;
     closest.path = null;
   }
