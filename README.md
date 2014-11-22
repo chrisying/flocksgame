@@ -2,6 +2,9 @@ Flocks game concept
 
 Current features:
 - Basic boids simulation
+- Hunter simulation
 
 Recognized problems:
-- Repulsion rule not working as smoothly as intended
+- When boids = 1, divide by 0 issue
+- No player
+- Eating a bit inconsistent
