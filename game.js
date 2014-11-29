@@ -4,8 +4,15 @@ var FRAME_TIME = 25; // milliseconds
 var HEIGHT, WIDTH; // Set in index.html, do not change here
 var numBoids = 20;
 var numHunters = 1;
+
 var player, boids, hunters, all;
 var gameRunning = 0;  // -1 = game over, 0 = init, 1 = running
+
+// Movement booleans
+var left = false;
+var right = false;
+var up = false;
+var down = false;
 
 // Init
 window.onload = function() {
@@ -13,6 +20,8 @@ window.onload = function() {
   paper.setup(canvas);
   HEIGHT = canvas.height;
   WIDTH = canvas.width;
+
+  // TODO: Start screen/basic instructions
 
   boids = [];
   hunters = [];
@@ -38,6 +47,7 @@ window.onload = function() {
   }
 
   // Hunters
+  // TODO: ensure hunter does not spawn on player, outer boundary
   for (var i = 0; i < numHunters; i++) {
     var hunter = new Boid(new paper.Point(Math.random() * WIDTH,
                                           Math.random() * HEIGHT),
@@ -54,28 +64,31 @@ document.onkeyup = releaseKey;
 
 function loop() {
   if (gameRunning == 1) {
+    // Player
+    player.velocity = Pscale(player.velocity, 0.5);
+    player.velocity = Padd(player.velocity, playerRule());
+    player.velocity = dampen(player.velocity, 3);
+
     // Boids
-    for (var i = 0; i < boids.length; i++) {
+    for (var i = 1; i < boids.length; i++) {
       var boid = boids[i];
-      if (boid.type == 1) {
-        var rules = [];
-        var sum_COM = calculate_COM();
-        var sum_VEL = calculate_VEL();
+      var rules = [];
+      var sum_COM = calculate_COM();
+      var sum_VEL = calculate_VEL();
 
-        if (boids.length >= 2) {
-          rules.push(rule1(boid, sum_COM));
-          rules.push(rule2(boid));
-          rules.push(rule3(boid, sum_VEL));
-        }
-        rules.push(rule4(boid));
-        rules.push(runRule(boid));
-        for (var r = 0; r < rules.length; r++) {
-          boid.velocity = Padd(boid.velocity, rules[r]);
-        }
-
-        boid.velocity = dampen(boid.velocity, 1);
-        boid.velocity = Padd(boid.velocity, noise());
+      if (boids.length >= 2) {
+        rules.push(rule1(boid, sum_COM));
+        rules.push(rule2(boid));
+        rules.push(rule3(boid, sum_VEL));
       }
+      rules.push(rule4(boid));
+      rules.push(runRule(boid));
+      for (var r = 0; r < rules.length; r++) {
+        boid.velocity = Padd(boid.velocity, rules[r]);
+      }
+
+      boid.velocity = dampen(boid.velocity, 1);
+      boid.velocity = Padd(boid.velocity, noise());
     }
 
     // Hunters
@@ -97,7 +110,7 @@ function loop() {
       boid = all[i];
 
       boid.position = boundary(Padd(boid.position, boid.velocity));
-      boid.position = Padd(boid.position, boid.velocity);
+      // boid.position = Padd(boid.position, boid.velocity);
       boid.draw();
     }
 
@@ -113,16 +126,16 @@ function handleKey(e) {
       gameRunning = 1;
       break;
     case 37:  // left
-      player.velocity = Padd(player.velocity, new paper.Point(-1, 0));
+      left = true;
       break;
     case 38:  // up
-      player.velocity = Padd(player.velocity, new paper.Point(0, -1));
+      up = true;
       break;
     case 39:  // right
-      player.velocity = Padd(player.velocity, new paper.Point(1, 0));
+      right = true;
       break;
     case 40:  // down
-      player.velocity = Padd(player.velocity, new paper.Point(0, 1));
+      down = true;
       break;
   }
 }
@@ -130,7 +143,29 @@ function handleKey(e) {
 function releaseKey(e) {
   e = e || window.event;
 
-  player.velocity = new paper.Point(0, 0);
+  switch(e.keyCode) {
+    case 37:
+      left = false;
+      break;
+    case 38:
+      up = false;
+      break;
+    case 39:
+      right = false;
+      break;
+    case 40:
+      down = false;
+      break;
+  }
+}
+
+function playerRule() {
+  var sum = new paper.Point(0, 0);
+  if (left) { sum = Padd(sum, new paper.Point(-1, 0)); }
+  if (right) { sum = Padd(sum, new paper.Point(1, 0)); }
+  if (up) { sum = Padd(sum, new paper.Point(0, -1)); }
+  if (down) { sum = Padd(sum, new paper.Point(0, 1)); }
+  return Pscale(sum, 1);
 }
 
 function calculate_COM() {
@@ -150,11 +185,12 @@ function calculate_VEL() {
 }
 
 function dampen(vel, max) {
+  // TODO: figure out how to dampen properly so that speeds balanced
   // Soft
   // if (Pabs(vel) > max) {
   //   vel = Pmul(vel, 0.9); 
   // }
-
+ 
   // Hard
   if (Pabs(vel) > 2 * max) {
     vel = Pscale(vel, 2 * max);
@@ -184,6 +220,7 @@ function rule1(boid, sum_COM) {
 }
 
 // Repulsion to nearby boids
+// TODO: fix issue where boids overlap and never separate (dist = 0)
 function rule2(boid) {
   var sum = new paper.Point(0, 0);
   for (var i = 0; i < boids.length; i++) {
@@ -245,19 +282,21 @@ function huntRule(hunter) {
   }
  
   // Try to avoid orbit 
-  // if (minD < 10000) {
-  //   SCALE = SCALE * 10;
-  // }
+  if (minD < 10000) {
+    SCALE = SCALE * 10;
+  }
 
   // Eat
+  // TODO: Gameover screen
   if (minD < 500) {
     if (ind == 0) {
       console.log('Game over!');
       gameRunning = -1;
     }
     
+    // TODO: reset hunter speed, hunt stops to "eat"
     boids.splice(ind, 1);
-    closest.velocity = (new paper.Point(0, 0));
+    closest.velocity = new paper.Point(0, 0);
     closest.type = 3;
     closest.path = null;
   }

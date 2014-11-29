@@ -25,7 +25,11 @@ function Pabs(p) {
 }
 
 function Pnorm(p) {
-  return Pdiv(p, Pabs(p));
+  if (Pabs(p) < 0.001) {
+    return new paper.Point(0, 0);
+  } else {
+    return Pdiv(p, Pabs(p));
+  }
 }
 
 function Pscale(p, n) {
@@ -45,6 +49,7 @@ function Boid(position, velocity, type) {
   this.path = null;
   this.draw = function() {
     // Update path in this function
+    // TODO: gfx
     if (this.path === null) {
       this.path = new paper.Path.Circle(
           this.position,
