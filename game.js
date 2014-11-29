@@ -62,6 +62,8 @@ setInterval(loop, FRAME_TIME);
 document.onkeydown = handleKey;
 document.onkeyup = releaseKey;
 
+// TODO: SCORE, points over time, more points if closer to herd, possible pickups?
+// TODO: possible pickups: score, speed, slow hunter, "invisible"
 function loop() {
   if (gameRunning == 1) {
     // Player
