@@ -53,7 +53,6 @@ function Boid(position, velocity, maxspeed, type) {
   this.raster = null;
   this.draw = function(time) {
     // Update path in this function
-    // TODO: gfx
     if (this.rasters === null) {
       /*this.path = new paper.Path.Circle(
           this.position,

@@ -215,7 +215,6 @@ function mainGameLoop() {
   //mainGameAssets.sprint.fontFamily = 'qwe';
   //mainGameAssets.sprint.font = 'qwe';
   //console.log(mainGameAssets.sprint.font);
-  console.log(boids.length);
   // Player
   player.velocity = Pmul(player.velocity, 0.8);
   player.velocity = Padd(player.velocity, playerRule());
