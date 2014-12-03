@@ -12,7 +12,9 @@ var startScreenAssets;
 var mainGameAssets;
 var gameOverAssets;
 
-var player, boids, hunters, all, score, time, sprint;
+var instructions = false;
+var time = 0;
+var player, boids, hunters, all, score, sprint;
 var isSprinting = false;
 
 var gameState = 0;  // 0 = start screen, 1 = setup state, 2 = main game, 3 = game over
@@ -25,6 +27,7 @@ var down = false;
 
 // Init
 window.onload = function() {
+  document.getElementById('background-track').volume = 0.3;
   var canvas = document.getElementById('canvas');
   paper.setup(canvas);
   HEIGHT_FULL = canvas.height;
@@ -79,6 +82,27 @@ function startScreenLoop() {
     paper.project.activeLayer.remove();
     layers.startScreenLayer.activate();
   }
+  if (instructions) {
+    startScreenAssets.title.visible = false;
+    startScreenAssets.start.visible = false;
+
+    if (Math.floor(time / 15) % 2 === 0) {
+      startScreenAssets.instruction1.visible = true;
+      startScreenAssets.instruction2.visible = false;
+    }
+    else {
+      startScreenAssets.instruction2.visible = true;
+      startScreenAssets.instruction1.visible = false;
+    }
+  }
+  else {
+    startScreenAssets.title.visible = true;
+    startScreenAssets.start.visible = true;
+    startScreenAssets.instruction1.visible = false;
+    startScreenAssets.instruction2.visible = false;
+  }
+
+  time += 1;
   paper.view.draw();
 }
 
@@ -159,6 +183,10 @@ function setupStateLoop() {
   score = 0;
   time = 0;
   sprint = 1;
+
+  document.getElementById('game-track').load();
+  document.getElementById('game-track').volume = 0.02;
+  document.getElementById('game-track').play();
 
   gameState = 2;
 }
@@ -270,10 +298,17 @@ function handleKey(e) {
   switch(e.keyCode) {
     case 13:  // enter
       if (gameState === 0) {
-        gameState = 1;
+        if (instructions) {
+          gameState = 1;
+          instructions = false;
+        }
+        else {
+          instructions = true;
+        }
       }
       else if (gameState === 3) {
         gameState = 0;
+        time = 0;
       }
       break;
     case 32:
@@ -452,6 +487,7 @@ function huntRule(hunter) {
     if (ind == 0) {
       console.log('Game over!');
       gameState = 3;
+      document.getElementById('game-track').pause();
     }
     
     boids.splice(ind, 1);

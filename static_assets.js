@@ -24,6 +24,20 @@ function createStartScreenAssets() {
       content: 'Press enter to play.'
     });
 
+  startScreenAssets.instruction1 = new paper.Raster(
+    { source: 'pacman/rules1.png',
+      position: new paper.Point(WIDTH_FULL / 2, HEIGHT_FULL / 2)
+    });
+  startScreenAssets.instruction1.visible = false;
+  startScreenAssets.instruction1.scale(1.5);
+
+  startScreenAssets.instruction2 = new paper.Raster(
+    { source: 'pacman/rules2.png',
+      position: new paper.Point(WIDTH_FULL / 2, HEIGHT_FULL / 2)
+    });
+  startScreenAssets.instruction2.visible = false;
+  startScreenAssets.instruction2.scale(1.5);
+
   return startScreenAssets;
 }
 

@@ -188,7 +188,7 @@ function Boid(position, velocity, maxspeed, type) {
         break;
       case 2:
       case 4:
-        var frame = Math.floor(time / 5) % 5;
+        var frame = Math.floor(time / 3) % 5;
         this.raster = this.rasters.up[frame];
         this.raster.rotation = 0;
         this.raster.rotate(-angle + 90);

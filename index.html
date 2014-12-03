@@ -7,10 +7,13 @@
     <script type="text/javascript" src="static_assets.js"></script>
     <script type="text/javascript" src="game.js"></script>
   </head>
-  <body>
-    <canvas id="canvas" height="980" width="1120" style="border-style: solid; border-color: black;" keepalive="true"></canvas>
-    <audio autoplay loop>
-      <source src="sound/victoryroad.mp3">
+  <body style="background-image: url('pacman/background.png'); background-size: 2679px 1026px; background-position: center">
+    <canvas id="canvas" height="980" width="1120" style="border-style: solid; border-color: black; margin-left:auto; margin-right:auto; display:block;" keepalive="true"></canvas>
+    <audio autoplay loop id="background-track">
+      <source src="sound/background.wav">
+    </audio>
+    <audio loop id="game-track">
+      <source src="sound/game.wav">
     </audio>
   </body>
 </html>
