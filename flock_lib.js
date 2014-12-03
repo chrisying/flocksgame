@@ -37,13 +37,16 @@ function Pscale(p, n) {
 }
 
 // Boids prototype
-function Boid(position, velocity, type) {
+function Boid(position, velocity, maxvel, type) {
   // type 0 = player, 1 = boid, 2 = hunter, 3 = dead, 4 = eating;
   this.type = type;
 
   // position, velocity is Paperjs Point
   this.position = position;
   this.velocity = velocity;
+
+  // maxvel = max dampen constant (basically max speed)
+  this.maxvel = maxvel;
 
   // Paperjs path
   this.path = null;

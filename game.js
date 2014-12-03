@@ -101,7 +101,8 @@ function setupStateLoop() {
   // Player (boid[0] always the player)
   player = new Boid(new paper.Point(WIDTH/2, HEIGHT/2),
                     new paper.Point(0, 0),
-                     0);
+                    1.5,
+                    0);
   boids.push(player);
   all.push(player);
 
@@ -112,7 +113,8 @@ function setupStateLoop() {
                                         Math.random() * HEIGHT),
                         new paper.Point(Math.cos(angle),
                                         Math.sin(angle)),
-                        1);
+                        1,  // maxvel
+                        1); // type
     boids.push(boid);
     all.push(boid);
   }
@@ -142,7 +144,8 @@ function setupStateLoop() {
 
     var hunter = new Boid(position,
                           new paper.Point(0, 0),
-                          2);
+                          2,  // maxvel
+                          2); // type
     hunters.push(hunter);
     all.push(hunter);
   }
@@ -158,7 +161,7 @@ function mainGameLoop() {
   // Player
   player.velocity = Pmul(player.velocity, 0.8);
   player.velocity = Padd(player.velocity, playerRule());
-  player.velocity = dampen(player.velocity, 1.5);
+  player.velocity = dampen(player.velocity, player.maxvel);
 
   // Boids
   for (var i = 1; i < boids.length; i++) {
@@ -178,7 +181,7 @@ function mainGameLoop() {
       boid.velocity = Padd(boid.velocity, rules[r]);
     }
 
-    boid.velocity = dampen(boid.velocity, 1);
+    boid.velocity = dampen(boid.velocity, boid.maxvel);
     boid.velocity = Padd(boid.velocity, noise());
   }
 
@@ -201,7 +204,7 @@ function mainGameLoop() {
       hunter.velocity = Padd(hunter.velocity, rules[r]);
     }
 
-    hunter.velocity = dampen(hunter.velocity, 2);
+    hunter.velocity = dampen(hunter.velocity, hunter.maxvel);
   }
 
   //Score, Time
@@ -413,7 +416,7 @@ function huntRule(hunter) {
   }
 
   // Eat
-  if (minD < 500) {
+  if (minD < 250) {
     if (ind == 0) {
       console.log('Game over!');
       gameState = 3;
@@ -423,7 +426,20 @@ function huntRule(hunter) {
     boids.splice(ind, 1);
     closest.velocity = new paper.Point(0, 0);
     closest.type = 3;
-    closest.path = null;
+    closest.path = null;  // Redraw dead boid
+    hunter.type = 4;
+    hunter.path.remove();
+    hunter.path = null;   // Redraws hunter
+    hunter.maxvel = 0;
+  }
+
+  if (hunter.maxvel < 0.2) {
+    hunter.maxvel += 0.005;
+  } else if (hunter.maxvel < 2) {
+    hunter.maxvel += 0.05;
+    hunter.type = 2;
+    hunter.path.remove();
+    hunter.path = null;
   }
 
   var vel = Psub(closest.position, hunter.position);
