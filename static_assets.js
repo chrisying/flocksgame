@@ -104,6 +104,11 @@ function createMainGameAssets() {
       fontSize: 20,
       content: 'Sprint: '
     });
+  /*mainGameAssets.characterStyle = {
+      fontSize: 20,
+      font: '8-BIT WONDER',
+      fillColor: 'white',
+    };*/
 
   mainGameAssets.sprintBarContainer = new paper.Path.Rectangle({
     from: [WIDTH_FULL * 16 / 64, (HEIGHT + HEIGHT_FULL) / 2 - 15],
@@ -116,7 +121,13 @@ function createMainGameAssets() {
   mainGameAssets.sprintBar = new paper.Path.Rectangle({
     from: [WIDTH_FULL * 16 / 64, (HEIGHT + HEIGHT_FULL) / 2 - 15],
     to: [WIDTH_FULL * 45 / 64, (HEIGHT + HEIGHT_FULL) / 2 + 25],
-    fillColor: new paper.Color(0, 0, 255),
+    fillColor: {
+        gradient: {
+            stops: ['red', 'blue']
+        },
+        origin: [WIDTH_FULL * 16 / 64, (HEIGHT + HEIGHT_FULL) / 2 - 15],
+        destination: [WIDTH_FULL * 45 / 64, (HEIGHT + HEIGHT_FULL) / 2 + 25]
+    },
     strokeColor: 'white',
     strokeWidth: 3,
     radius: 5

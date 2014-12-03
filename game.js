@@ -212,6 +212,9 @@ function setupStateLoop() {
 
 // TODO: possible pickups: score, speed, slow hunter, "invisible"
 function mainGameLoop() {
+  //mainGameAssets.sprint.fontFamily = 'qwe';
+  //mainGameAssets.sprint.font = 'qwe';
+  //console.log(mainGameAssets.sprint.font);
   // Player
   player.velocity = Pmul(player.velocity, 0.8);
   player.velocity = Padd(player.velocity, playerRule());
@@ -387,9 +390,16 @@ function mainGameLoop() {
   }
 
   mainGameAssets.sprintBar.bounds.width = (WIDTH_FULL * 7 / 16) * sprint;
-  mainGameAssets.sprintBar.fillColor = new paper.Color(
+  /*mainGameAssets.sprintBar.fillColor = new paper.Color(
     1 - sprint, 0, sprint
-  );
+  );*/
+  mainGameAssets.sprintBar.fillColor = {
+        gradient: {
+            stops: ['red', 'blue']
+        },
+        origin: [WIDTH_FULL * 16 / 64, (HEIGHT + HEIGHT_FULL) / 2 - 15],
+        destination: [WIDTH_FULL * 45 / 64, (HEIGHT + HEIGHT_FULL) / 2 + 25]
+    };
 
   // Draw/update loop
   for (var i = 0; i < all.length; i++) {

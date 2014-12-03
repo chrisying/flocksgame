@@ -171,19 +171,21 @@ function Boid(position, velocity, maxspeed, type) {
     switch(this.type) {
       case 0:
       case 1:
-        var frame = Math.floor(time / 10) % 2;
-        var octant = angle / 45;
-        if ((-3 <= octant) && (octant < -1)) {
-          this.raster = this.rasters.down[frame];
-        }
-        else if ((-1 <= octant) && (octant < 1)) {
-          this.raster = this.rasters.right[frame];
-        }
-        else if ((1 <= octant) && (octant < 3)) {
-          this.raster = this.rasters.up[frame];
-        }
-        else {
-          this.raster = this.rasters.left[frame];
+        if (Pabs(this.velocity) > 0.01) {
+          var frame = Math.floor(time / 10) % 2;
+          var octant = angle / 45;
+          if ((-3 <= octant) && (octant < -1)) {
+            this.raster = this.rasters.down[frame];
+          }
+          else if ((-1 <= octant) && (octant < 1)) {
+            this.raster = this.rasters.right[frame];
+          }
+          else if ((1 <= octant) && (octant < 3)) {
+            this.raster = this.rasters.up[frame];
+          }
+          else {
+            this.raster = this.rasters.left[frame];
+          }
         }
         break;
       case 2:
