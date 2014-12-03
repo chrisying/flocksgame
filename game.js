@@ -245,7 +245,7 @@ function mainGameLoop() {
 
     boid.position = boundary(Padd(boid.position, boid.velocity));
     // boid.position = Padd(boid.position, boid.velocity);
-    boid.draw();
+    boid.draw(time + i * 8);
   }
 
   paper.view.draw();
@@ -457,12 +457,12 @@ function huntRule(hunter) {
     boids.splice(ind, 1);
     closest.velocity = new paper.Point(0, 0);
     closest.type = 3;
-    closest.raster.remove();
-    closest.raster = null;  // Redraw dead boid
+    closest.removeRasters();
+    closest.rasters = null;  // Redraw dead boid
 
     hunter.type = 4;
-    hunter.raster.remove();
-    hunter.raster = null;   // Redraws hunter
+    hunter.removeRasters();
+    hunter.rasters = null;   // Redraws hunter
     hunter.maxspeed = 0;
   }
 
@@ -471,8 +471,8 @@ function huntRule(hunter) {
   } else if (hunter.maxspeed < 2) {
     hunter.maxspeed += 0.05;
     hunter.type = 2;
-    hunter.raster.remove();
-    hunter.raster = null;
+    hunter.removeRasters();
+    hunter.rasters = null;
   }
 
   var vel = Psub(closest.position, hunter.position);

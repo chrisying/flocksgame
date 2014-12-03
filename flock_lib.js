@@ -48,12 +48,13 @@ function Boid(position, velocity, maxspeed, type) {
   // maxspeed = max dampen constant (basically max speed)
   this.maxspeed = maxspeed;
 
-  // Paperjs path
+  // Paperjs raster
+  this.rasters = null
   this.raster = null;
-  this.draw = function(i) {
+  this.draw = function(time) {
     // Update path in this function
     // TODO: gfx
-    if (this.raster === null) {
+    if (this.rasters === null) {
       /*this.path = new paper.Path.Circle(
           this.position,
           10);
@@ -75,36 +76,140 @@ function Boid(position, velocity, maxspeed, type) {
           break;*/
       switch (this.type) {
         case 0:
-          this.raster = new paper.Raster('pacman/rghostdown1.png');
+          this.rasters = {
+            up: [new paper.Raster('pacman/rghostup1.png'),
+                 new paper.Raster('pacman/rghostup2.png')],
+            down: [new paper.Raster('pacman/rghostdown1.png'),
+                   new paper.Raster('pacman/rghostdown2.png')],
+            left: [new paper.Raster('pacman/rghostleft1.png'),
+                   new paper.Raster('pacman/rghostleft2.png')],
+            right: [new paper.Raster('pacman/rghostright1.png'),
+                    new paper.Raster('pacman/rghostright2.png')],
+          }
           break;
         case 1:
           switch(Math.floor(Math.random() * 3)) {
             case 0:
-              this.raster = new paper.Raster('pacman/bghostdown1.png');
+              this.rasters = {
+                up: [new paper.Raster('pacman/bghostup1.png'),
+                     new paper.Raster('pacman/bghostup2.png')],
+                down: [new paper.Raster('pacman/bghostdown1.png'),
+                       new paper.Raster('pacman/bghostdown2.png')],
+                left: [new paper.Raster('pacman/bghostleft1.png'),
+                       new paper.Raster('pacman/bghostleft2.png')],
+                right: [new paper.Raster('pacman/bghostright1.png'),
+                        new paper.Raster('pacman/bghostright2.png')],
+              }
               break;
             case 1:
-              this.raster = new paper.Raster('pacman/pghostdown1.png');
+              this.rasters = {
+                up: [new paper.Raster('pacman/pghostup1.png'),
+                     new paper.Raster('pacman/pghostup2.png')],
+                down: [new paper.Raster('pacman/pghostdown1.png'),
+                       new paper.Raster('pacman/pghostdown2.png')],
+                left: [new paper.Raster('pacman/pghostleft1.png'),
+                       new paper.Raster('pacman/pghostleft2.png')],
+                right: [new paper.Raster('pacman/pghostright1.png'),
+                        new paper.Raster('pacman/pghostright2.png')],
+              }
               break;
             case 2:
-              this.raster = new paper.Raster('pacman/yghostdown1.png');
+              this.rasters = {
+                up: [new paper.Raster('pacman/yghostup1.png'),
+                     new paper.Raster('pacman/yghostup2.png')],
+                down: [new paper.Raster('pacman/yghostdown1.png'),
+                       new paper.Raster('pacman/yghostdown2.png')],
+                left: [new paper.Raster('pacman/yghostleft1.png'),
+                       new paper.Raster('pacman/yghostleft2.png')],
+                right: [new paper.Raster('pacman/yghostright1.png'),
+                        new paper.Raster('pacman/yghostright2.png')],
+              }
               break;
           }
           break;
         case 2:
-          this.rasters = 
-          this.raster = new paper.Raster('pacman/pac1.png');
+          this.rasters = {
+            up: [new paper.Raster('pacman/pac1.png'),
+                 new paper.Raster('pacman/pac2.png'),
+                 new paper.Raster('pacman/pac3.png'),
+                 new paper.Raster('pacman/pac2.png'),
+                 new paper.Raster('pacman/pac1.png')]
+          }
           break;
         case 3:
-          this.raster = new paper.Raster('pacman/deadghost1.png');
+          this.rasters = {
+            up: [new paper.Raster('pacman/deadghost1.png'),
+                 new paper.Raster('pacman/deadghost2.png')]
+          }
           break;
         case 4:
-          this.raster = new paper.Raster('pacman/pac2.png');
+          this.rasters = {
+            up: [new paper.Raster('pacman/pac1.png'),
+                 new paper.Raster('pacman/pac2.png'),
+                 new paper.Raster('pacman/pac3.png'),
+                 new paper.Raster('pacman/pac2.png'),
+                 new paper.Raster('pacman/pac1.png')]
+          }
           break;
       }
-      this.raster.position = this.position;
+
+      var keys = Object.keys(this.rasters);
+      for (var i = 0; i < keys.length; i++) {
+        var dirRasters = this.rasters[keys[i]];
+
+        for (var j = 0; j < dirRasters.length; j++) {
+          dirRasters[j].visible = false;
+        }
+      }
+
+      this.raster = this.rasters.up[0];
     }
-    else {
-      this.raster.position = this.position;
+
+    this.raster.visible = false;
+    var angle = Math.atan2(-this.velocity.y, this.velocity.x) * 180 / Math.PI;
+
+    switch(this.type) {
+      case 0:
+      case 1:
+        var frame = Math.floor(time / 10) % 2;
+        var octant = angle / 45;
+        if ((-3 <= octant) && (octant < -1)) {
+          this.raster = this.rasters.down[frame];
+        }
+        else if ((-1 <= octant) && (octant < 1)) {
+          this.raster = this.rasters.right[frame];
+        }
+        else if ((1 <= octant) && (octant < 3)) {
+          this.raster = this.rasters.up[frame];
+        }
+        else {
+          this.raster = this.rasters.left[frame];
+        }
+        break;
+      case 2:
+      case 4:
+        var frame = Math.floor(time / 5) % 5;
+        this.raster = this.rasters.up[frame];
+        this.raster.rotation = 0;
+        this.raster.rotate(-angle + 90);
+        break;
+      case 3:
+        this.raster = this.rasters.up[0];
+        break;
+    }
+
+    this.raster.visible = true;
+    this.raster.position = this.position;
+  }
+
+  this.removeRasters = function () {
+    var keys = Object.keys(this.rasters);
+    for (var i = 0; i < keys.length; i++) {
+      var dirRasters = this.rasters[keys[i]];
+
+      for (var j = 0; j < dirRasters.length; j++) {
+        dirRasters[j].remove();
+      }
     }
   }
 }
