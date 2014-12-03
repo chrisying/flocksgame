@@ -68,21 +68,21 @@ function createMainGameAssets() {
     });*/
 
   mainGameAssets.border1 = new paper.Path.Rectangle(
-    { from: [10, HEIGHT + 10],
-      to: [WIDTH - 10, HEIGHT_FULL],
+    { from: [10, HEIGHT + 15],
+      to: [WIDTH - 10, HEIGHT_FULL - 5],
       strokeColor: 'white',
       strokeWidth: 5
     });
 
   mainGameAssets.border2 = new paper.Path.Rectangle(
-    { from: [0, HEIGHT + 20],
-      to: [WIDTH, HEIGHT_FULL - 10],
+    { from: [0, HEIGHT + 25],
+      to: [WIDTH, HEIGHT_FULL - 15],
       strokeColor: 'white',
       strokeWidth: 5
     });
 
   mainGameAssets.score = new paper.PointText(
-    { point: [WIDTH_FULL * 1 / 32, (HEIGHT * 2 + HEIGHT_FULL) / 3 + 10],
+    { point: [WIDTH_FULL * 2 / 64, (HEIGHT * 2 + HEIGHT_FULL) / 3 + 15],
       justification: 'left',
       fillColor: 'white',
       fontSize: 20,
@@ -90,7 +90,7 @@ function createMainGameAssets() {
     });
 
   mainGameAssets.time = new paper.PointText(
-    { point: [WIDTH_FULL * 1 / 32, (HEIGHT + HEIGHT_FULL * 2) / 3 + 10],
+    { point: [WIDTH_FULL * 2 / 64, (HEIGHT + HEIGHT_FULL * 2) / 3 + 10],
       justification: 'left',
       fillColor: 'white',
       fontSize: 20,
@@ -98,7 +98,7 @@ function createMainGameAssets() {
     });
 
   mainGameAssets.sprint = new paper.PointText(
-    { point: [WIDTH_FULL * 3 / 16, (HEIGHT + HEIGHT_FULL) / 2 + 10],
+    { point: [WIDTH_FULL * 12 / 64, (HEIGHT + HEIGHT_FULL) / 2 + 10],
       justification: 'left',
       fillColor: 'white',
       fontSize: 20,
@@ -106,20 +106,24 @@ function createMainGameAssets() {
     });
 
   mainGameAssets.sprintBarContainer = new paper.Path.Rectangle({
-    from: [WIDTH_FULL * 1 / 4, (HEIGHT + HEIGHT_FULL) / 2 - 15],
-    to: [WIDTH_FULL * 5 / 8, (HEIGHT + HEIGHT_FULL) / 2 + 25],
-    strokeColor: 'white'
+    from: [WIDTH_FULL * 16 / 64, (HEIGHT + HEIGHT_FULL) / 2 - 15],
+    to: [WIDTH_FULL * 44 / 64, (HEIGHT + HEIGHT_FULL) / 2 + 25],
+    strokeColor: 'white',
+    strokeWidth: 3,
+    radius: 5
   });
 
   mainGameAssets.sprintBar = new paper.Path.Rectangle({
-    from: [WIDTH_FULL * 1 / 4, (HEIGHT + HEIGHT_FULL) / 2 - 15],
-    to: [WIDTH_FULL * 5 / 8, (HEIGHT + HEIGHT_FULL) / 2 + 25],
+    from: [WIDTH_FULL * 16 / 64, (HEIGHT + HEIGHT_FULL) / 2 - 15],
+    to: [WIDTH_FULL * 45 / 64, (HEIGHT + HEIGHT_FULL) / 2 + 25],
     fillColor: new paper.Color(0, 0, 255),
-    strokeColor: 'white'
+    strokeColor: 'white',
+    strokeWidth: 3,
+    radius: 5
   });
 
   mainGameAssets.powerUps = new paper.PointText(
-    { point: [WIDTH_FULL * 21 / 32, (HEIGHT + HEIGHT_FULL) / 2 + 10],
+    { point: [WIDTH_FULL * 93 / 128, (HEIGHT + HEIGHT_FULL) / 2 + 10],
       justification: 'left',
       fillColor: 'white',
       fontSize: 20,
@@ -127,15 +131,19 @@ function createMainGameAssets() {
     });
 
   mainGameAssets.powerUpsBox1 = new paper.Path.Rectangle({
-    from: [WIDTH_FULL * 25 / 32, (HEIGHT + HEIGHT_FULL) / 2 - 30],
-    to: [WIDTH_FULL * 27 / 32, (HEIGHT + HEIGHT_FULL) / 2 + 40],
-    strokeColor: 'white'
+    from: [WIDTH_FULL * 53 / 64, (HEIGHT + HEIGHT_FULL) / 2 - 30],
+    to: [WIDTH_FULL * 57 / 64, (HEIGHT + HEIGHT_FULL) / 2 + 40],
+    strokeColor: 'white',
+    fillColor: 'white',
+    radius: 15
   });
 
   mainGameAssets.powerUpsBox2 = new paper.Path.Rectangle({
-    from: [WIDTH_FULL * 7 / 8, (HEIGHT + HEIGHT_FULL) / 2 - 30],
-    to: [WIDTH_FULL * 15 / 16, (HEIGHT + HEIGHT_FULL) / 2 + 40],
-    strokeColor: 'white'
+    from: [WIDTH_FULL * 58 / 64, (HEIGHT + HEIGHT_FULL) / 2 - 30],
+    to: [WIDTH_FULL * 62 / 64, (HEIGHT + HEIGHT_FULL) / 2 + 40],
+    strokeColor: 'white',
+    fillColor: 'white',
+    radius: 15
   });
 
   return mainGameAssets;
@@ -180,14 +188,27 @@ function createGameOverAssets() {
   return gameOverAssets;
 }
 
-function powerUp(position, type) {
+function powerUp(position, type, spawnTime) {
   this.type = type;
   this.position = position;
+  this.spawnTime = spawnTime;
 
   switch (this.type) {
     case 0:
       this.raster = new paper.Raster('pacman/cherry.png');
       this.raster.position = this.position;
+      break;
+    case 1:
+      this.raster = new paper.Raster('pacman/orange.png');
+      this.raster.position = this.position;
+      break;
+    case 2:
+      this.raster = new paper.Raster('pacman/melon.png');
+      this.raster.position = this.position;
       break
+  }
+
+  this.draw = function () {
+    this.raster.position = this.position;
   }
 }

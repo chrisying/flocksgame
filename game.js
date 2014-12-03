@@ -191,10 +191,17 @@ function setupStateLoop() {
   score = 0;
   time = 0;
   sprint = 1;
-  powerUps = {
-    cherry: { instances: [],
-              nextSpawn: Math.floor(250 + 250 * Math.random()) }
-  };
+  powerUps = [
+    { instances: [],
+      nextSpawn: Math.floor(250 + Math.floor(250 * Math.random())),
+      maxSize: 3 },
+    { instances: [],
+      nextSpawn: Math.floor(500 + Math.floor(500 * Math.random())),
+      maxSize: 2 },
+    { instances: [],
+      nextSpawn: Math.floor(1000 + Math.floor(500 * Math.random())),
+      maxSize: 2 }
+  ];
 
   document.getElementById('game-track').load();
   document.getElementById('game-track').volume = 0.02;
@@ -266,36 +273,108 @@ function mainGameLoop() {
   }
 
   //Power-ups
-  for (var i = 0; i < powerUps.cherry.instances.length; i++) {
-    if (Pdistsq(powerUps.cherry.instances[i].position, boids[0].position) < 250) {
-      powerUps.cherry.instances[i].raster.remove();
-      powerUps.cherry.instances[i] = null;
+  //Check collisions
+  for (var i = 0; i < powerUps.length; i++) {
+    var powerUpGroup = powerUps[i];
+    
+    for (var j = 0; j < powerUpGroup.instances.length; j++) {
+      if (Pdistsq(powerUpGroup.instances[j].position,
+                  boids[0].position) < 250) {
+        powerUpGroup.instances[j].raster.remove();
+        powerUpGroup.instances[j] = null;
 
-      for (var i = 0; i < Math.floor(numBoids / 10); i++) {
-        var angle = Math.random() * 2 * Math.PI;
-        var boid = new Boid(new paper.Point(Math.random() * WIDTH,
-                                            Math.random() * HEIGHT),
-                            new paper.Point(Math.cos(angle),
-                                            Math.sin(angle)),
-                            1,  // maxspeed
-                            1); // type
-        boids.push(boid);
-        all.push(boid);
-      }      
+        switch (i) {
+          case 0:
+            score += 5000;
+            break;
+          case 1:
+            for (var k = 0;
+                 k < Math.min(Math.max(numBoids - boids.length + 1, 0), 
+                              Math.floor(numBoids / 10));
+                 k++) {
+              var angle = Math.random() * 2 * Math.PI;
+              var boid = new Boid(new paper.Point(Math.random() * WIDTH,
+                                                  Math.random() * HEIGHT),
+                                  new paper.Point(Math.cos(angle),
+                                                  Math.sin(angle)),
+                                  1,  // maxspeed
+                                  1); // type
+              boids.push(boid);
+              all.push(boid);
+            }
+            break;
+          case 2:
+            for (var k = 0;
+                 k < Math.floor(numBoids / 25);
+                 k++) {
+              var angle = Math.random() * 2 * Math.PI;
+              var boid = new Boid(new paper.Point(Math.random() * WIDTH,
+                                                  Math.random() * HEIGHT),
+                                  new paper.Point(Math.cos(angle),
+                                                  Math.sin(angle)),
+                                  1.5,  // maxspeed
+                                  1); // type
+              boids.push(boid);
+              all.push(boid);
+            }
+            break;
+        }
+      }
     }
   }
-  powerUps.cherry.instances = powerUps.cherry.instances.filter(function (element) {
-    return (element ? true : false);
-  });
-  if (time === powerUps.cherry.nextSpawn) {
-    var instance = new powerUp(new paper.Point(Math.random() * WIDTH,
-                                               Math.random() * HEIGHT),
-                               0);
-    powerUps.cherry.instances.push(instance);
-    powerUps.cherry.nextSpawn = -1;
+  powerUps = powerUps.map(
+    function (element1) {
+      element1.instances = element1.instances.filter(
+        function (element2) {
+          return (element2 ? true : false);
+        });
+      return element1;
+    });
+
+  //Spawn power ups
+  for (var i = 0; i < powerUps.length; i++) {
+    var powerUpGroup = powerUps[i];
+    if (time === powerUpGroup.nextSpawn) {
+      var instance = new powerUp(new paper.Point(50 + Math.random() * (WIDTH - 50),
+                                                 50 + Math.random() * (HEIGHT - 50)),
+                                 i,
+                                 time);
+      powerUpGroup.instances.push(instance);
+      powerUpGroup.nextSpawn = -1;
+    }
   }
-  if ((powerUps.cherry.nextSpawn === -1) && (powerUps.cherry.instances.length < 2)) {
-    powerUps.cherry.nextSpawn = time + 250 + Math.floor(500 * Math.random());
+
+  //Set next spawn if possible
+  for (var i = 0; i < powerUps.length; i++) {
+    var powerUpGroup = powerUps[i];
+    if ((powerUpGroup.nextSpawn === -1) &&
+        (powerUpGroup.instances.length < powerUpGroup.maxSize)) {
+      switch (i) {
+        case 0:
+          powerUpGroup.nextSpawn = time + 250 + Math.floor(250 * Math.random());
+          break;
+        case 1:
+          powerUpGroup.nextSpawn = time + 500 + Math.floor(500 * Math.random());
+          break;
+        case 2:
+          powerUpGroup.nextSpawn = time + 1000 + Math.floor(500 * Math.random());
+          break;
+      }
+    }
+  }
+
+  //Move spawned fruit if untouched for a while
+  for (var i = 0; i < powerUps.length; i++) {
+    var powerUpGroup = powerUps[i];
+
+    for (var j = 0; j < powerUpGroup.instances.length; j++) {
+      if (time >= powerUpGroup.instances[j].spawnTime + 250 + 125 * i) {
+        powerUpGroup.instances[j].position = new paper.Point(50 + Math.random() * (WIDTH - 50),
+                                                             50 + Math.random() * (HEIGHT - 50));
+        powerUpGroup.instances[j].spawnTime = time;
+        powerUpGroup.instances[j].draw();
+      }
+    }
   }
 
   //Score, Time
@@ -307,7 +386,7 @@ function mainGameLoop() {
     mainGameAssets.time.content = 'Time: ' + (time / 40).toString();
   }
 
-  mainGameAssets.sprintBar.bounds.width = (WIDTH_FULL * 3 / 8) * sprint;
+  mainGameAssets.sprintBar.bounds.width = (WIDTH_FULL * 7 / 16) * sprint;
   mainGameAssets.sprintBar.fillColor = new paper.Color(
     1 - sprint, 0, sprint
   );
@@ -530,7 +609,6 @@ function huntRule(hunter) {
   // Eat
   if (minD < 250) {
     if (ind == 0) {
-      console.log('Game over!');
       gameState = 3;
       document.getElementById('game-track').pause();
     }
