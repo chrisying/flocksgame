@@ -38,7 +38,7 @@ function Pscale(p, n) {
 
 // Boids prototype
 function Boid(position, velocity, type) {
-  // type 0 = player, 1 = boid, 2 = hunter, 3 = dead
+  // type 0 = player, 1 = boid, 2 = hunter, 3 = dead, 4 = eating;
   this.type = type;
 
   // position, velocity is Paperjs Point
@@ -66,6 +66,9 @@ function Boid(position, velocity, type) {
           break;
         case 3:
           this.path.strokeColor = 'purple';
+          break;
+        case 4:
+          this.path.strokeColor = 'orange';
           break;
       }
     }

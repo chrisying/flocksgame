@@ -1,12 +1,20 @@
 
 // Constants
 var FRAME_TIME = 25; // milliseconds
+var HEIGHT_FULL, WIDTH_FULL;
 var HEIGHT, WIDTH; // Set in index.html, do not change here
-var numBoids = 20;
-var numHunters = 1;
+var numBoids = 50;
+var numHunters = 2;
 
-var player, boids, hunters, all;
-var gameRunning = 0;  // -1 = game over, 0 = init, 1 = running
+var layers;
+
+var startScreenAssets;
+var mainGameAssets;
+var gameOverAssets;
+
+var player, boids, hunters, all, score, time;
+
+var gameState = 0;  // 0 = start screen, 1 = setup state, 2 = main game, 3 = game over
 
 // Movement booleans
 var left = false;
@@ -18,10 +26,154 @@ var down = false;
 window.onload = function() {
   var canvas = document.getElementById('canvas');
   paper.setup(canvas);
-  HEIGHT = canvas.height;
-  WIDTH = canvas.width;
+  HEIGHT_FULL = canvas.height;
+  WIDTH_FULL = canvas.width;
+  HEIGHT = (HEIGHT_FULL * 6) / 7;
+  WIDTH = WIDTH_FULL;
 
-  // TODO: Start screen/basic instructions
+  paper.project.activeLayer.remove()
+
+  layers = { startScreenLayer: new paper.Layer(),
+             mainGameLayer: new paper.Layer(),
+             gameOverLayer: new paper.Layer() };
+ 
+  layers.startScreenLayer.activate();
+
+  startScreenAssets = {};
+
+  startScreenAssets.title = new paper.PointText(
+    { point: [WIDTH_FULL / 2, HEIGHT_FULL / 3],
+      justification: 'center',
+      fillColor: 'black',
+      fontSize: 100,
+      content: 'Flocks'
+    });
+
+  startScreenAssets.start = new paper.PointText(
+    { point: [WIDTH_FULL / 2, HEIGHT_FULL * 2 / 3],
+      justification: 'center',
+      fillColor: 'black',
+      fontSize: 50,
+      content: 'Press enter to play.'
+    });
+
+  layers.mainGameLayer.activate();
+
+  mainGameAssets = {};
+
+  mainGameAssets.divider = new paper.Path.Line(
+    { from: [0, HEIGHT + 15],
+      to: [WIDTH_FULL, HEIGHT + 15],
+      strokeColor: 'black'
+    });
+
+  mainGameAssets.score = new paper.PointText(
+    { point: [WIDTH_FULL / 4, (HEIGHT + HEIGHT_FULL) / 2],
+      justification: 'center',
+      fillColor: 'black',
+      fontSize: 25,
+      content: 'Score: 0'
+    });
+
+  mainGameAssets.time = new paper.PointText(
+    { point: [WIDTH_FULL / 2, (HEIGHT + HEIGHT_FULL) / 2],
+      justification: 'center',
+      fillColor: 'black',
+      fontSize: 25,
+      content: 'Time: 0'
+    });
+
+  mainGameAssets.powerUps = new paper.PointText(
+    { point: [WIDTH_FULL * 3 / 4, (HEIGHT + HEIGHT_FULL) / 2],
+      justification: 'center',
+      fillColor: 'black',
+      fontSize: 25,
+      content: 'Power ups: None'
+    });
+
+  layers.gameOverLayer.activate();
+
+  gameOverAssets = {};
+
+  gameOverAssets.message = new paper.PointText(
+    { point: [WIDTH_FULL / 2, HEIGHT_FULL / 3],
+      justification: 'center',
+      fillColor: 'black',
+      fontSize: 100,
+      content: 'Game Over!'
+    });
+
+  gameOverAssets.score = new paper.PointText(
+    { point: [WIDTH_FULL / 2, HEIGHT_FULL / 2],
+      justification: 'center',
+      fillColor: 'black',
+      fontSize: 50,
+      content: 'Your score was 0.'
+    });
+
+  gameOverAssets.time = new paper.PointText(
+    { point: [WIDTH_FULL / 2, HEIGHT_FULL * 7 / 12],
+      justification: 'center',
+      fillColor: 'black',
+      fontSize: 50,
+      content: 'You survived for 0 seconds.'
+    });
+
+  gameOverAssets.start = new paper.PointText(
+    { point: [WIDTH_FULL / 2, HEIGHT_FULL * 2 / 3],
+      justification: 'center',
+      fillColor: 'black',
+      fontSize: 36,
+      content: 'Press enter to go to the start screen.'
+    });
+
+  layers.startScreenLayer.activate();
+  layers.mainGameLayer.remove();
+  layers.gameOverLayer.remove();
+}
+
+setInterval(loop, FRAME_TIME);
+document.onkeydown = handleKey;
+document.onkeyup = releaseKey;
+
+function loop() {
+  switch (gameState) {
+    case 0:
+      startScreenLoop();
+      break;
+    case 1:
+      setupStateLoop();
+      break;
+    case 2:
+      mainGameLoop();
+      break;
+    case 3:
+      gameOverLoop();
+      break;
+  }
+}
+
+function startScreenLoop() {
+  if (paper.project.activeLayer != layers.startScreenLayer) {
+    paper.project.layers.push(layers.startScreenLayer);
+    paper.project.activeLayer.remove();
+    layers.startScreenLayer.activate();
+  }
+  paper.view.draw();
+}
+
+function setupStateLoop() {
+  paper.project.layers.push(layers.mainGameLayer);
+  paper.project.activeLayer.remove();
+  layers.mainGameLayer.activate();
+  paper.project.activeLayer.removeChildren();
+
+  paper.project.activeLayer.addChildren([
+    mainGameAssets.divider,
+    mainGameAssets.score,
+    mainGameAssets.time,
+    mainGameAssets.powerUps,
+  ]);
 
   boids = [];
   hunters = [];
@@ -47,77 +199,117 @@ window.onload = function() {
   }
 
   // Hunters
-  // TODO: ensure hunter does not spawn on player, outer boundary
   for (var i = 0; i < numHunters; i++) {
-    var hunter = new Boid(new paper.Point(Math.random() * WIDTH,
-                                          Math.random() * HEIGHT),
+    var position;
+
+    switch (Math.floor(Math.random() * 4)) {
+      case 0:
+        position = new paper.Point(Math.random() * WIDTH / 3,
+                                   Math.random() * HEIGHT / 3);
+        break;
+      case 1:
+        position = new paper.Point(WIDTH * 2 / 3 + Math.random() * WIDTH / 3,
+                                   Math.random() * HEIGHT / 3);
+        break;
+      case 2:
+        position = new paper.Point(Math.random() * WIDTH / 3,
+                                   HEIGHT * 2 / 3 + Math.random() * HEIGHT / 3);
+        break;
+      case 3:
+        position = new paper.Point(WIDTH * 2 / 3 + Math.random() * WIDTH / 3,
+                                   HEIGHT * 2 / 3 + Math.random() * HEIGHT / 3);
+        break;
+    }
+
+    var hunter = new Boid(position,
                           new paper.Point(0, 0),
                           2);
     hunters.push(hunter);
     all.push(hunter);
   }
+
+  score = 0;
+  time = 0;
+
+  gameState = 2;
 }
 
-setInterval(loop, FRAME_TIME);
-document.onkeydown = handleKey;
-document.onkeyup = releaseKey;
-
-// TODO: SCORE, points over time, more points if closer to herd, possible pickups?
 // TODO: possible pickups: score, speed, slow hunter, "invisible"
-function loop() {
-  if (gameRunning == 1) {
-    // Player
-    player.velocity = Pscale(player.velocity, 0.5);
-    player.velocity = Padd(player.velocity, playerRule());
-    player.velocity = dampen(player.velocity, 3);
+function mainGameLoop() {
+  // Player
+  player.velocity = Pmul(player.velocity, 0.8);
+  player.velocity = Padd(player.velocity, playerRule());
+  player.velocity = dampen(player.velocity, 1.5);
 
-    // Boids
-    for (var i = 1; i < boids.length; i++) {
-      var boid = boids[i];
-      var rules = [];
-      var sum_COM = calculate_COM();
-      var sum_VEL = calculate_VEL();
+  // Boids
+  for (var i = 1; i < boids.length; i++) {
+    var boid = boids[i];
+    var rules = [];
+    var sum_COM = calculate_COM();
+    var sum_VEL = calculate_VEL();
 
-      if (boids.length >= 2) {
-        rules.push(rule1(boid, sum_COM));
-        rules.push(rule2(boid));
-        rules.push(rule3(boid, sum_VEL));
-      }
-      rules.push(rule4(boid));
-      rules.push(runRule(boid));
-      for (var r = 0; r < rules.length; r++) {
-        boid.velocity = Padd(boid.velocity, rules[r]);
-      }
-
-      boid.velocity = dampen(boid.velocity, 1);
-      boid.velocity = Padd(boid.velocity, noise());
+    if (boids.length >= 2) {
+      rules.push(rule1(boid, sum_COM));
+      rules.push(rule2(boid));
+      rules.push(rule3(boid, sum_VEL));
+    }
+    rules.push(rule4(boid));
+    rules.push(runRule(boid));
+    for (var r = 0; r < rules.length; r++) {
+      boid.velocity = Padd(boid.velocity, rules[r]);
     }
 
-    // Hunters
-    for (var i = 0; i < numHunters; i++) {
-      var hunter = hunters[i];
-      var rules = [];
-
-      rules.push(huntRule(hunter));
-      rules.push(rule4(hunter));
-      for (var r = 0; r < rules.length; r++) {
-        hunter.velocity = Padd(hunter.velocity, rules[r]);
-      }
-
-      hunter.velocity = dampen(hunter.velocity, 2);
-    }
-
-    // Draw/update loop
-    for (var i = 0; i < all.length; i++) {
-      boid = all[i];
-
-      boid.position = boundary(Padd(boid.position, boid.velocity));
-      // boid.position = Padd(boid.position, boid.velocity);
-      boid.draw();
-    }
-
-    paper.view.draw();
+    boid.velocity = dampen(boid.velocity, 1);
+    boid.velocity = Padd(boid.velocity, noise());
   }
+
+  // Hunters
+  for (var i = 0; i < numHunters; i++) {
+    var hunter = hunters[i];
+    var rules = [];
+
+    rules.push(huntRule(hunter));
+    rules.push(rule4(hunter));
+    for (var r = 0; r < rules.length; r++) {
+      hunter.velocity = Padd(hunter.velocity, rules[r]);
+    }
+
+    hunter.velocity = dampen(hunter.velocity, 2);
+  }
+
+  //Score, Time
+  score += changeInScore();
+  time += 1;
+
+  // Draw/update loop
+  for (var i = 0; i < all.length; i++) {
+    if (time % 40 === 0) {
+      mainGameAssets.score.content = 'Score: ' + score.toString();
+      mainGameAssets.time.content = 'Time: ' + (time / 40).toString();
+    }
+
+    boid = all[i];
+
+    boid.position = boundary(Padd(boid.position, boid.velocity));
+    // boid.position = Padd(boid.position, boid.velocity);
+    boid.draw();
+  }
+
+  paper.view.draw();
+}
+
+function gameOverLoop() {
+  if (paper.project.activeLayer != layers.gameOverLayer) {
+    paper.project.layers.push(layers.gameOverLayer);
+    paper.project.activeLayer.remove();
+    layers.gameOverLayer.activate();
+
+    gameOverAssets.score.content = 'Your score was ' + score.toString() + '.';
+
+    gameOverAssets.time.content = 'You survived for ' + Math.floor(time / 40).toString() + ' seconds.';
+  }
+
+  paper.view.draw();
 }
 
 function handleKey(e) {
@@ -125,7 +317,12 @@ function handleKey(e) {
 
   switch(e.keyCode) {
     case 13:  // enter
-      gameRunning = 1;
+      if (gameState === 0) {
+        gameState = 1;
+      }
+      else if (gameState === 3) {
+        gameState = 0;
+      }
       break;
     case 37:  // left
       left = true;
@@ -289,11 +486,10 @@ function huntRule(hunter) {
   }
 
   // Eat
-  // TODO: Gameover screen
   if (minD < 500) {
     if (ind == 0) {
       console.log('Game over!');
-      gameRunning = -1;
+      gameState = 3;
     }
     
     // TODO: reset hunter speed, hunt stops to "eat"
@@ -305,4 +501,16 @@ function huntRule(hunter) {
 
   var vel = Psub(closest.position, hunter.position);
   return Pscale(vel, SCALE);
+}
+
+function changeInScore() {
+  var change = 10 * hunters.length;
+
+  if (boids.length > 2) {
+    for (var i = 2; i < boids.length; i++) {
+      change += 100 / (0.1 + Math.sqrt(Pdistsq(boids[0].position, boids[i].position)));
+    }
+  }
+
+  return Math.floor(change);
 }
