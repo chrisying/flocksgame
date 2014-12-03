@@ -30,28 +30,41 @@ function createMainGameAssets() {
     });
 
   mainGameAssets.score = new paper.PointText(
-    { point: [WIDTH_FULL / 4, (HEIGHT + HEIGHT_FULL) / 2 + 10],
-      justification: 'center',
+    { point: [WIDTH_FULL * 1 / 32, (HEIGHT * 2 + HEIGHT_FULL) / 3 + 10],
+      justification: 'left',
       fillColor: 'black',
-      fontSize: 25,
+      fontSize: 20,
       content: 'Score: 0'
     });
 
   mainGameAssets.time = new paper.PointText(
-    { point: [WIDTH_FULL / 2, (HEIGHT + HEIGHT_FULL) / 2 + 10],
-      justification: 'center',
+    { point: [WIDTH_FULL * 1 / 32, (HEIGHT + HEIGHT_FULL * 2) / 3 + 10],
+      justification: 'left',
       fillColor: 'black',
-      fontSize: 25,
+      fontSize: 20,
       content: 'Time: 0'
     });
 
-  mainGameAssets.powerUps = new paper.PointText(
-    { point: [WIDTH_FULL * 3 / 4, (HEIGHT + HEIGHT_FULL) / 2 + 10],
-      justification: 'center',
+  mainGameAssets.sprint = new paper.PointText(
+    { point: [WIDTH_FULL * 1 / 4, (HEIGHT + HEIGHT_FULL) / 2 + 10],
+      justification: 'left',
       fillColor: 'black',
       fontSize: 25,
-      content: 'Power ups: None'
+      content: 'Sprint: '
     });
+
+  mainGameAssets.sprintBarContainer = new paper.Path.Rectangle({
+    from: [WIDTH_FULL * 3 / 8, (HEIGHT + HEIGHT_FULL) / 2 - 15],
+    to: [WIDTH_FULL * 3 / 4, (HEIGHT + HEIGHT_FULL) / 2 + 25],
+    strokeColor: 'black'
+  });
+
+  mainGameAssets.sprintBar = new paper.Path.Rectangle({
+    from: [WIDTH_FULL * 3 / 8, (HEIGHT + HEIGHT_FULL) / 2 - 15],
+    to: [WIDTH_FULL * 1 / 2, (HEIGHT + HEIGHT_FULL) / 2 + 25],
+    fillColor: new paper.Color(0, 0, 255),
+    strokeColor: 'black'
+  });
 
   return mainGameAssets;
 }

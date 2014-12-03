@@ -12,7 +12,8 @@ var startScreenAssets;
 var mainGameAssets;
 var gameOverAssets;
 
-var player, boids, hunters, all, score, time;
+var player, boids, hunters, all, score, time, sprint;
+var isSprinting = false;
 
 var gameState = 0;  // 0 = start screen, 1 = setup state, 2 = main game, 3 = game over
 
@@ -91,8 +92,12 @@ function setupStateLoop() {
     mainGameAssets.divider,
     mainGameAssets.score,
     mainGameAssets.time,
-    mainGameAssets.powerUps,
+    mainGameAssets.sprint,
+    mainGameAssets.sprintBarContainer,
+    mainGameAssets.sprintBar
   ]);
+  mainGameAssets.score.content = 'Score: 0';
+  mainGameAssets.time.content = 'Time: 0';
 
   boids = [];
   hunters = [];
@@ -101,7 +106,7 @@ function setupStateLoop() {
   // Player (boid[0] always the player)
   player = new Boid(new paper.Point(WIDTH/2, HEIGHT/2),
                     new paper.Point(0, 0),
-                    1.5,
+                    1,
                     0);
   boids.push(player);
   all.push(player);
@@ -152,6 +157,7 @@ function setupStateLoop() {
 
   score = 0;
   time = 0;
+  sprint = 1;
 
   gameState = 2;
 }
@@ -162,6 +168,17 @@ function mainGameLoop() {
   player.velocity = Pmul(player.velocity, 0.8);
   player.velocity = Padd(player.velocity, playerRule());
   player.velocity = dampen(player.velocity, player.maxspeed);
+
+  if (isSprinting) {
+    sprint = Math.max(sprint - 0.03, 0);
+  }
+  if (sprint === 0) {
+    isSprinting = false;
+    player.maxspeed = 1;
+  }
+  if (sprint < 1) {
+    sprint = Math.min(sprint + 0.003, 1);
+  }
 
   // Boids
   for (var i = 1; i < boids.length; i++) {
@@ -211,13 +228,18 @@ function mainGameLoop() {
   score += changeInScore();
   time += 1;
 
+  if (time % 40 === 0) {
+    mainGameAssets.score.content = 'Score: ' + score.toString();
+    mainGameAssets.time.content = 'Time: ' + (time / 40).toString();
+  }
+
+  mainGameAssets.sprintBar.bounds.width = (WIDTH_FULL * 3 / 8) * sprint;
+  mainGameAssets.sprintBar.fillColor = new paper.Color(
+    1 - sprint, 0, sprint
+  );
+
   // Draw/update loop
   for (var i = 0; i < all.length; i++) {
-    if (time % 40 === 0) {
-      mainGameAssets.score.content = 'Score: ' + score.toString();
-      mainGameAssets.time.content = 'Time: ' + (time / 40).toString();
-    }
-
     boid = all[i];
 
     boid.position = boundary(Padd(boid.position, boid.velocity));
@@ -235,7 +257,6 @@ function gameOverLoop() {
     layers.gameOverLayer.activate();
 
     gameOverAssets.score.content = 'Your score was ' + score.toString() + '.';
-
     gameOverAssets.time.content = 'You survived for ' + Math.floor(time / 40).toString() + ' seconds.';
   }
 
@@ -252,6 +273,12 @@ function handleKey(e) {
       }
       else if (gameState === 3) {
         gameState = 0;
+      }
+      break;
+    case 32:
+      if (sprint > 0.5) {
+        isSprinting = true;
+        player.maxspeed = 2;
       }
       break;
     case 37:  // left
@@ -273,6 +300,10 @@ function releaseKey(e) {
   e = e || window.event;
 
   switch(e.keyCode) {
+    case 32:
+      isSprinting = false;
+      player.maxspeed = 1;
+      break;
     case 37:
       left = false;
       break;
@@ -294,6 +325,7 @@ function playerRule() {
   if (right) { sum = Padd(sum, new paper.Point(1, 0)); }
   if (up) { sum = Padd(sum, new paper.Point(0, -1)); }
   if (down) { sum = Padd(sum, new paper.Point(0, 1)); }
+
   return Pscale(sum, 1);
 }
 
@@ -424,7 +456,9 @@ function huntRule(hunter) {
     boids.splice(ind, 1);
     closest.velocity = new paper.Point(0, 0);
     closest.type = 3;
+    closest.path.remove();
     closest.path = null;  // Redraw dead boid
+
     hunter.type = 4;
     hunter.path.remove();
     hunter.path = null;   // Redraws hunter
