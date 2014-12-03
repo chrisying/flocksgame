@@ -113,7 +113,7 @@ function setupStateLoop() {
                                         Math.random() * HEIGHT),
                         new paper.Point(Math.cos(angle),
                                         Math.sin(angle)),
-                        1,  // maxvel
+                        1,  // maxspeed
                         1); // type
     boids.push(boid);
     all.push(boid);
@@ -144,7 +144,7 @@ function setupStateLoop() {
 
     var hunter = new Boid(position,
                           new paper.Point(0, 0),
-                          2,  // maxvel
+                          2,  // maxspeed
                           2); // type
     hunters.push(hunter);
     all.push(hunter);
@@ -161,7 +161,7 @@ function mainGameLoop() {
   // Player
   player.velocity = Pmul(player.velocity, 0.8);
   player.velocity = Padd(player.velocity, playerRule());
-  player.velocity = dampen(player.velocity, player.maxvel);
+  player.velocity = dampen(player.velocity, player.maxspeed);
 
   // Boids
   for (var i = 1; i < boids.length; i++) {
@@ -181,7 +181,7 @@ function mainGameLoop() {
       boid.velocity = Padd(boid.velocity, rules[r]);
     }
 
-    boid.velocity = dampen(boid.velocity, boid.maxvel);
+    boid.velocity = dampen(boid.velocity, boid.maxspeed);
     boid.velocity = Padd(boid.velocity, noise());
   }
 
@@ -204,7 +204,7 @@ function mainGameLoop() {
       hunter.velocity = Padd(hunter.velocity, rules[r]);
     }
 
-    hunter.velocity = dampen(hunter.velocity, hunter.maxvel);
+    hunter.velocity = dampen(hunter.velocity, hunter.maxspeed);
   }
 
   //Score, Time
@@ -430,13 +430,13 @@ function huntRule(hunter) {
     hunter.type = 4;
     hunter.path.remove();
     hunter.path = null;   // Redraws hunter
-    hunter.maxvel = 0;
+    hunter.maxspeed = 0;
   }
 
-  if (hunter.maxvel < 0.2) {
-    hunter.maxvel += 0.005;
-  } else if (hunter.maxvel < 2) {
-    hunter.maxvel += 0.05;
+  if (hunter.maxspeed < 0.2) {
+    hunter.maxspeed += 0.005;
+  } else if (hunter.maxspeed < 2) {
+    hunter.maxspeed += 0.05;
     hunter.type = 2;
     hunter.path.remove();
     hunter.path = null;
