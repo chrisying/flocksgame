@@ -98,11 +98,11 @@ function startScreenLoop() {
     }
   }
   else {
-    if (Math.floor(time / 18.5) % 3 === 0) {
+    if (Math.floor(time / 18.88) % 3 === 0) {
       startScreenAssets.title3.visible = false;
       startScreenAssets.title1.visible = true;
     }
-    else if (Math.floor(time / 18.5) % 3 === 1) {
+    else if (Math.floor(time / 18.88) % 3 === 1) {
       startScreenAssets.title1.visible = false;
       startScreenAssets.title2.visible = true;
     }
@@ -215,6 +215,7 @@ function mainGameLoop() {
   //mainGameAssets.sprint.fontFamily = 'qwe';
   //mainGameAssets.sprint.font = 'qwe';
   //console.log(mainGameAssets.sprint.font);
+  console.log(boids.length);
   // Player
   player.velocity = Pmul(player.velocity, 0.8);
   player.velocity = Padd(player.velocity, playerRule());
@@ -308,7 +309,7 @@ function mainGameLoop() {
             break;
           case 2:
             for (var k = 0;
-                 k < Math.floor(numBoids / 25);
+                 k < Math.floor(numBoids / 20);
                  k++) {
               var angle = Math.random() * 2 * Math.PI;
               var boid = new Boid(new paper.Point(Math.random() * WIDTH,
@@ -316,7 +317,7 @@ function mainGameLoop() {
                                   new paper.Point(Math.cos(angle),
                                                   Math.sin(angle)),
                                   1.5,  // maxspeed
-                                  1); // type
+                                  5); // type
               boids.push(boid);
               all.push(boid);
             }

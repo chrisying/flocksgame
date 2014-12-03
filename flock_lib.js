@@ -38,7 +38,7 @@ function Pscale(p, n) {
 
 // Boids prototype
 function Boid(position, velocity, maxspeed, type) {
-  // type 0 = player, 1 = boid, 2 = hunter, 3 = dead, 4 = eating;
+  // type 0 = player, 1 = boid, 2 = hunter, 3 = dead, 4 = eating; 5 = super;
   this.type = type;
 
   // position, velocity is Paperjs Point
@@ -151,6 +151,14 @@ function Boid(position, velocity, maxspeed, type) {
                  new paper.Raster('pacman/pac1.png')]
           }
           break;
+        case 5:
+          this.rasters = {
+            up: [new paper.Raster('pacman/whiteghost1.png'),
+                 new paper.Raster('pacman/whiteghost2.png')]
+          }
+          this.rasters.up[0].scale(0.5);
+          this.rasters.up[1].scale(0.5);
+          break;
       }
 
       var keys = Object.keys(this.rasters);
@@ -197,6 +205,12 @@ function Boid(position, velocity, maxspeed, type) {
         break;
       case 3:
         this.raster = this.rasters.up[0];
+        break;
+      case 5:
+        if (Pabs(this.velocity) > 0.01) {
+          var frame = Math.floor(time / 10) % 2;
+          this.raster = this.rasters.up[frame];
+        }
         break;
     }
 
