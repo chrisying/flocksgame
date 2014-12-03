@@ -1,10 +1,17 @@
 function createStartScreenAssets() {
   var startScreenAssets = {};
 
+  startScreenAssets.background = new paper.Path.Rectangle(
+    { from: [0, 0],
+      to: [WIDTH_FULL, HEIGHT_FULL],
+      strokeColor: 'black',
+      fillColor: 'black'
+    });
+
   startScreenAssets.title = new paper.PointText(
     { point: [WIDTH_FULL / 2, HEIGHT_FULL / 3],
       justification: 'center',
-      fillColor: 'black',
+      fillColor: 'white',
       fontSize: 100,
       content: 'Flocks'
     });
@@ -12,7 +19,7 @@ function createStartScreenAssets() {
   startScreenAssets.start = new paper.PointText(
     { point: [WIDTH_FULL / 2, HEIGHT_FULL * 2 / 3],
       justification: 'center',
-      fillColor: 'black',
+      fillColor: 'white',
       fontSize: 50,
       content: 'Press enter to play.'
     });
@@ -23,9 +30,16 @@ function createStartScreenAssets() {
 function createMainGameAssets() {
   var mainGameAssets = {};
 
+  mainGameAssets.background = new paper.Path.Rectangle(
+    { from: [0, 0],
+      to: [WIDTH, HEIGHT + 10],
+      strokeColor: 'black',
+      fillColor: 'black'
+    });
+
   mainGameAssets.divider = new paper.Path.Line(
-    { from: [0, HEIGHT + 15],
-      to: [WIDTH_FULL, HEIGHT + 15],
+    { from: [0, HEIGHT + 10],
+      to: [WIDTH_FULL, HEIGHT + 10],
       strokeColor: 'black'
     });
 
@@ -72,10 +86,17 @@ function createMainGameAssets() {
 function createGameOverAssets() {
   var gameOverAssets = {};
 
+  gameOverAssets.background = new paper.Path.Rectangle(
+    { from: [0, 0],
+      to: [WIDTH_FULL, HEIGHT_FULL],
+      strokeColor: 'black',
+      fillColor: 'black'
+    });
+
   gameOverAssets.message = new paper.PointText(
     { point: [WIDTH_FULL / 2, HEIGHT_FULL / 3],
       justification: 'center',
-      fillColor: 'black',
+      fillColor: 'white',
       fontSize: 100,
       content: 'Game Over!'
     });
@@ -83,7 +104,7 @@ function createGameOverAssets() {
   gameOverAssets.score = new paper.PointText(
     { point: [WIDTH_FULL / 2, HEIGHT_FULL / 2],
       justification: 'center',
-      fillColor: 'black',
+      fillColor: 'white',
       fontSize: 50,
       content: 'Your score was 0.'
     });
@@ -91,7 +112,7 @@ function createGameOverAssets() {
   gameOverAssets.time = new paper.PointText(
     { point: [WIDTH_FULL / 2, HEIGHT_FULL * 7 / 12],
       justification: 'center',
-      fillColor: 'black',
+      fillColor: 'white',
       fontSize: 50,
       content: 'You survived for 0 seconds.'
     });
@@ -99,7 +120,7 @@ function createGameOverAssets() {
   gameOverAssets.start = new paper.PointText(
     { point: [WIDTH_FULL / 2, HEIGHT_FULL * 2 / 3],
       justification: 'center',
-      fillColor: 'black',
+      fillColor: 'white',
       fontSize: 36,
       content: 'Press enter to go to the start screen.'
     });

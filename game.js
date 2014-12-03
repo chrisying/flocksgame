@@ -89,6 +89,7 @@ function setupStateLoop() {
   paper.project.activeLayer.removeChildren();
 
   paper.project.activeLayer.addChildren([
+    mainGameAssets.background,
     mainGameAssets.divider,
     mainGameAssets.score,
     mainGameAssets.time,
@@ -456,12 +457,12 @@ function huntRule(hunter) {
     boids.splice(ind, 1);
     closest.velocity = new paper.Point(0, 0);
     closest.type = 3;
-    closest.path.remove();
-    closest.path = null;  // Redraw dead boid
+    closest.raster.remove();
+    closest.raster = null;  // Redraw dead boid
 
     hunter.type = 4;
-    hunter.path.remove();
-    hunter.path = null;   // Redraws hunter
+    hunter.raster.remove();
+    hunter.raster = null;   // Redraws hunter
     hunter.maxspeed = 0;
   }
 
@@ -470,8 +471,8 @@ function huntRule(hunter) {
   } else if (hunter.maxspeed < 2) {
     hunter.maxspeed += 0.05;
     hunter.type = 2;
-    hunter.path.remove();
-    hunter.path = null;
+    hunter.raster.remove();
+    hunter.raster = null;
   }
 
   var vel = Psub(closest.position, hunter.position);

@@ -49,12 +49,12 @@ function Boid(position, velocity, maxspeed, type) {
   this.maxspeed = maxspeed;
 
   // Paperjs path
-  this.path = null;
-  this.draw = function() {
+  this.raster = null;
+  this.draw = function(i) {
     // Update path in this function
     // TODO: gfx
-    if (this.path === null) {
-      this.path = new paper.Path.Circle(
+    if (this.raster === null) {
+      /*this.path = new paper.Path.Circle(
           this.position,
           10);
       switch (this.type) {
@@ -72,11 +72,39 @@ function Boid(position, velocity, maxspeed, type) {
           break;
         case 4:
           this.path.strokeColor = 'orange';
+          break;*/
+      switch (this.type) {
+        case 0:
+          this.raster = new paper.Raster('pacman/rghostdown1.png');
+          break;
+        case 1:
+          switch(Math.floor(Math.random() * 3)) {
+            case 0:
+              this.raster = new paper.Raster('pacman/bghostdown1.png');
+              break;
+            case 1:
+              this.raster = new paper.Raster('pacman/pghostdown1.png');
+              break;
+            case 2:
+              this.raster = new paper.Raster('pacman/yghostdown1.png');
+              break;
+          }
+          break;
+        case 2:
+          this.rasters = 
+          this.raster = new paper.Raster('pacman/pac1.png');
+          break;
+        case 3:
+          this.raster = new paper.Raster('pacman/deadghost1.png');
+          break;
+        case 4:
+          this.raster = new paper.Raster('pacman/pac2.png');
           break;
       }
+      this.raster.position = this.position;
     }
     else {
-      this.path.position = this.position;
+      this.raster.position = this.position;
     }
   }
 }
