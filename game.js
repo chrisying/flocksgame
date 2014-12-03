@@ -4,7 +4,7 @@ var FRAME_TIME = 25; // milliseconds
 var HEIGHT_FULL, WIDTH_FULL;
 var HEIGHT, WIDTH; // Set in index.html, do not change here
 var numBoids = 50;
-var numHunters = 2;
+var numHunters = 3;
 
 var layers;
 
@@ -314,7 +314,6 @@ function calculate_VEL(group) {
 }
 
 function dampen(vel, max) {
-  // TODO: figure out how to dampen properly so that speeds balanced
   // Soft
   // if (Pabs(vel) > max) {
   //   vel = Pmul(vel, 0.9); 
@@ -422,7 +421,6 @@ function huntRule(hunter) {
       gameState = 3;
     }
     
-    // TODO: reset hunter speed, hunt stops to "eat"
     boids.splice(ind, 1);
     closest.velocity = new paper.Point(0, 0);
     closest.type = 3;
