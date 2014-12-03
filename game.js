@@ -14,7 +14,7 @@ var gameOverAssets;
 
 var instructions = false;
 var time = 0;
-var player, boids, hunters, all, score, sprint;
+var player, boids, hunters, all, score, sprint, powerUps;
 var isSprinting = false;
 
 var gameState = 0;  // 0 = start screen, 1 = setup state, 2 = main game, 3 = game over
@@ -83,7 +83,9 @@ function startScreenLoop() {
     layers.startScreenLayer.activate();
   }
   if (instructions) {
-    startScreenAssets.title.visible = false;
+    startScreenAssets.title1.visible = false;
+    startScreenAssets.title2.visible = false;
+    startScreenAssets.title3.visible = false;
     startScreenAssets.start.visible = false;
 
     if (Math.floor(time / 15) % 2 === 0) {
@@ -96,7 +98,19 @@ function startScreenLoop() {
     }
   }
   else {
-    startScreenAssets.title.visible = true;
+    if (Math.floor(time / 18.5) % 3 === 0) {
+      startScreenAssets.title3.visible = false;
+      startScreenAssets.title1.visible = true;
+    }
+    else if (Math.floor(time / 18.5) % 3 === 1) {
+      startScreenAssets.title1.visible = false;
+      startScreenAssets.title2.visible = true;
+    }
+    else {
+      startScreenAssets.title2.visible = false;
+      startScreenAssets.title3.visible = true;
+    }
+
     startScreenAssets.start.visible = true;
     startScreenAssets.instruction1.visible = false;
     startScreenAssets.instruction2.visible = false;
@@ -112,15 +126,9 @@ function setupStateLoop() {
   layers.mainGameLayer.activate();
   paper.project.activeLayer.removeChildren();
 
-  paper.project.activeLayer.addChildren([
-    mainGameAssets.background,
-    mainGameAssets.divider,
-    mainGameAssets.score,
-    mainGameAssets.time,
-    mainGameAssets.sprint,
-    mainGameAssets.sprintBarContainer,
-    mainGameAssets.sprintBar
-  ]);
+  var keys = Object.keys(mainGameAssets);
+  var objects = keys.map(function (key) { return mainGameAssets[key]; });
+  paper.project.activeLayer.addChildren(objects);
   mainGameAssets.score.content = 'Score: 0';
   mainGameAssets.time.content = 'Time: 0';
 
@@ -183,6 +191,10 @@ function setupStateLoop() {
   score = 0;
   time = 0;
   sprint = 1;
+  powerUps = {
+    cherry: { instances: [],
+              nextSpawn: Math.floor(250 + 250 * Math.random()) }
+  };
 
   document.getElementById('game-track').load();
   document.getElementById('game-track').volume = 0.02;
@@ -251,6 +263,39 @@ function mainGameLoop() {
     }
 
     hunter.velocity = dampen(hunter.velocity, hunter.maxspeed);
+  }
+
+  //Power-ups
+  for (var i = 0; i < powerUps.cherry.instances.length; i++) {
+    if (Pdistsq(powerUps.cherry.instances[i].position, boids[0].position) < 250) {
+      powerUps.cherry.instances[i].raster.remove();
+      powerUps.cherry.instances[i] = null;
+
+      for (var i = 0; i < Math.floor(numBoids / 10); i++) {
+        var angle = Math.random() * 2 * Math.PI;
+        var boid = new Boid(new paper.Point(Math.random() * WIDTH,
+                                            Math.random() * HEIGHT),
+                            new paper.Point(Math.cos(angle),
+                                            Math.sin(angle)),
+                            1,  // maxspeed
+                            1); // type
+        boids.push(boid);
+        all.push(boid);
+      }      
+    }
+  }
+  powerUps.cherry.instances = powerUps.cherry.instances.filter(function (element) {
+    return (element ? true : false);
+  });
+  if (time === powerUps.cherry.nextSpawn) {
+    var instance = new powerUp(new paper.Point(Math.random() * WIDTH,
+                                               Math.random() * HEIGHT),
+                               0);
+    powerUps.cherry.instances.push(instance);
+    powerUps.cherry.nextSpawn = -1;
+  }
+  if ((powerUps.cherry.nextSpawn === -1) && (powerUps.cherry.instances.length < 2)) {
+    powerUps.cherry.nextSpawn = time + 250 + Math.floor(500 * Math.random());
   }
 
   //Score, Time
