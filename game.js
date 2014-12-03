@@ -164,13 +164,13 @@ function mainGameLoop() {
   for (var i = 1; i < boids.length; i++) {
     var boid = boids[i];
     var rules = [];
-    var sum_COM = calculate_COM();
-    var sum_VEL = calculate_VEL();
+    var sum_COM = calculate_COM(boids);
+    var sum_VEL = calculate_VEL(boids);
 
     if (boids.length >= 2) {
-      rules.push(rule1(boid, sum_COM));
-      rules.push(rule2(boid));
-      rules.push(rule3(boid, sum_VEL));
+      rules.push(rule1(boid, sum_COM, boids));
+      rules.push(rule2(boid, boids));
+      rules.push(rule3(boid, sum_VEL, boids));
     }
     rules.push(rule4(boid));
     rules.push(runRule(boid));
@@ -187,6 +187,14 @@ function mainGameLoop() {
     var hunter = hunters[i];
     var rules = [];
 
+    var sum_COM = calculate_COM(hunters);
+    var sum_VEL = calculate_VEL(hunters);
+
+    if (hunters.length >= 2) {
+      rules.push(rule1(hunter, sum_COM, hunters));
+      rules.push(rule2(hunter, hunters));
+      rules.push(rule3(hunter, sum_VEL, hunters));
+    }
     rules.push(huntRule(hunter));
     rules.push(rule4(hunter));
     for (var r = 0; r < rules.length; r++) {
@@ -286,18 +294,18 @@ function playerRule() {
   return Pscale(sum, 1);
 }
 
-function calculate_COM() {
-  var sum = boids[0].position;
-  for (var i = 1; i < boids.length; i++) {
-    sum = Padd(sum, boids[i].position);
+function calculate_COM(group) {
+  var sum = group[0].position;
+  for (var i = 1; i < group.length; i++) {
+    sum = Padd(sum, group[i].position);
   }
   return sum;
 }
 
-function calculate_VEL() {
-  var sum = boids[0].velocity;
-  for (var i = 1; i < boids.length; i++) {
-    sum = Padd(sum, boids[i].velocity);
+function calculate_VEL(group) {
+  var sum = group[0].velocity;
+  for (var i = 1; i < group.length; i++) {
+    sum = Padd(sum, group[i].velocity);
   }
   return sum;
 }
@@ -331,20 +339,20 @@ function boundary(pos) {
 }
 
 // Attraction to perceived center of mass
-function rule1(boid, sum_COM) {
+function rule1(boid, sum_COM, group) {
   var per_COM = Psub(sum_COM, boid.position);
-  var per_COM = Pdiv(per_COM, boids.length - 1);
+  var per_COM = Pdiv(per_COM, group.length - 1);
   return Pdiv(Psub(per_COM, boid.position), 1000);
 }
 
 // Repulsion to nearby boids
 // TODO: fix issue where boids overlap and never separate (dist = 0)
-function rule2(boid) {
+function rule2(boid, group) {
   var sum = new paper.Point(0, 0);
-  for (var i = 0; i < boids.length; i++) {
-    if (boids[i] !== boid) {
-      if (Pdistsq(boids[i].position, boid.position) < 1000) {
-        var displace = Psub(boids[i].position, boid.position);
+  for (var i = 0; i < group.length; i++) {
+    if (group[i] !== boid) {
+      if (Pdistsq(group[i].position, boid.position) < 1000) {
+        var displace = Psub(group[i].position, boid.position);
         sum = Psub(sum, displace);
       }
     }
@@ -353,9 +361,9 @@ function rule2(boid) {
 }
 
 // Assimilate
-function rule3(boid, sum_VEL) {
+function rule3(boid, sum_VEL, group) {
   var per_VEL = Psub(sum_VEL, boid.velocity);
-  var per_VEL = Pdiv(per_VEL, boids.length - 1);
+  var per_VEL = Pdiv(per_VEL, group.length - 1);
   return Pdiv(Psub(per_VEL, boid.velocity), 100);
 }
 
