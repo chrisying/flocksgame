@@ -1,12 +1,12 @@
-Flocks game concept
+PacAttack
 
-Current features:
-- Basic boids simulation
-- Hunter simulation
-- Player movement
+---
 
-TODO:
-- fix player movement (constant speed, possibly use mouse location)
-- make hunter speed slowly increase
-- make boids show direction with triangle
-- just read the TODO's scattered in the code
+Simple web game based off flocking behavior (boids) with borrowed graphics.
+
+Made by:
+- chrisying
+- jmioo
+
+
+Note: there is currently a bug with canvas automatically resizing on smaller resolution. Use a resize handler to fix!
