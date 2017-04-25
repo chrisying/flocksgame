@@ -28,10 +28,21 @@ var down = false;
 // Init
 window.onload = function() {
   document.getElementById('background-track').volume = 0.3;
+
+  var window_width = $(window).width()
+  var window_height = $(window).height()
   var canvas = document.getElementById('canvas');
+
+  canvas.width = window_width / 1.5
+  canvas.height = window_height / 1.25
+  console.log(canvas.width)
   paper.setup(canvas);
-  HEIGHT_FULL = canvas.height;
-  WIDTH_FULL = canvas.width;
+  console.log(canvas.width)
+  //paper.view.viewSize.width = window_width;
+  //paper.view.viewSize.height = window_height;
+
+  HEIGHT_FULL = canvas.height / 2;
+  WIDTH_FULL = canvas.width / 2;
   HEIGHT = (HEIGHT_FULL * 6) / 7;
   WIDTH = WIDTH_FULL;
 

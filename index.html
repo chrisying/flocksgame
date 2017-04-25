@@ -3,14 +3,15 @@
   <head>
     <title>PacAttack</title>
     <link rel="stylesheet" type="text/css" href="game.css">
-    <script type="text/javascript" src="paperjs/dist/paper-full.min.js"></script>
-    <script type="text/javascript" src="flock_lib.js"></script>
-    <script type="text/javascript" src="static_assets.js"></script>
+    <script type="text/javascript" src="lib/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="lib/paperjs/dist/paper-full.min.js"></script>
+    <script type="text/javascript" src="lib/flock_lib.js"></script>
+    <script type="text/javascript" src="lib/static_assets.js"></script>
     <script type="text/javascript" src="game.js"></script>
   </head>
-  <body style="background-image: url('pacman/background.png'); background-size: 2679px 1026px; background-position: center; background-repeat: no-repeat; margin: 0; background-color: black;">
+  <body>
     <div style="visibility: hidden; font-family: '8-BIT WONDER'; float: left; position: absolute;">test</div>
-    <canvas id="canvas" height="980" width="1120" style="border-style: solid; border-color: black; margin-left:auto; margin-right:auto; display:block;" keepalive="true"></canvas>
+    <canvas id="canvas" style="border-style: solid; border-color: red; margin-left:auto; margin-right:auto; display:block;" keepalive="true"></canvas>
     <audio autoplay loop id="background-track">
       <source src="sound/background.wav">
     </audio>
