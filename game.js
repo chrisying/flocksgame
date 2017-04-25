@@ -35,9 +35,7 @@ window.onload = function() {
 
   canvas.width = window_width / 1.5
   canvas.height = window_height / 1.25
-  console.log(canvas.width)
   paper.setup(canvas);
-  console.log(canvas.width)
   //paper.view.viewSize.width = window_width;
   //paper.view.viewSize.height = window_height;
 
